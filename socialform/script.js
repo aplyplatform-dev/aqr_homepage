@@ -183,12 +183,12 @@ document.getElementById('socialForm').addEventListener('submit', async function 
 
   var formData = new FormData(this);
 
-  /* 이미지 첨부 파일을 1/16 품질 JPEG 로 압축 후 교체 */
+  /* 이미지 첨부 파일이 8MB 초과 시 1/4 품질 JPEG 로 압축 후 교체 */
   var attachInput = document.getElementById('attachment');
   var attachFile  = attachInput.files && attachInput.files[0];
-  if (attachFile && attachFile.type !== 'application/pdf') {
+  if (attachFile && attachFile.type !== 'application/pdf' && attachFile.size > 8 * 1024 * 1024) {
     try {
-      var compressed = await compressImageToJpeg(attachFile, 1 / 16);
+      var compressed = await compressImageToJpeg(attachFile, 1 / 4);
       var baseName   = attachFile.name.replace(/\.[^.]+$/, '') + '.jpg';
       formData.delete('attachment');
       formData.append('attachment', compressed, baseName);

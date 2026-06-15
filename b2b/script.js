@@ -417,8 +417,9 @@
       var aPages = await merged.copyPages(attachDoc, attachDoc.getPageIndices());
       aPages.forEach(function (p) { merged.addPage(p); });
     } else {
-      /* 이미지(JPG/PNG) → 1/16 품질 JPEG 로 압축 후 A4 페이지에 삽입 */
-      var compressedBytes = await compressImageToJpeg(attachmentFile, 1 / 16);
+      /* 이미지(JPG/PNG) → JPEG 로 변환 후 A4 페이지에 삽입 (8MB 초과 시 1/8 품질로 압축) */
+      var imgQuality = attachmentFile.size > 8 * 1024 * 1024 ? 1 / 8 : 1;
+      var compressedBytes = await compressImageToJpeg(attachmentFile, imgQuality);
       var imgPage     = merged.addPage([595.28, 841.89]);
       var embeddedImg = await merged.embedJpg(compressedBytes);
       var dims = embeddedImg.scaleToFit(
