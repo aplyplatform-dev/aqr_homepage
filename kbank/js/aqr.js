@@ -378,13 +378,15 @@
   }
 
   function showResult(type, icon, title, msg) {
-    var box = document.getElementById('resultBox');
-    box.className = 'result-box ' + type;
-    box.style.display = 'block';
-    document.getElementById('resultIcon').innerHTML = icon;
-    document.getElementById('resultTitle').textContent = title;
-    document.getElementById('resultMsg').innerHTML = msg;
-    box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(function() {
+      var box = document.getElementById('resultBox');
+      box.className = 'result-box ' + type;
+      box.style.display = 'block';
+      document.getElementById('resultIcon').innerHTML = icon;
+      document.getElementById('resultTitle').textContent = title;
+      document.getElementById('resultMsg').innerHTML = msg;
+      box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 200);
   }
 
   function clearResult() {
