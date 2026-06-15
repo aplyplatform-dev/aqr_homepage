@@ -339,6 +339,7 @@
     formData.append('account_name', accountName);
 
     try {
+      clearResult();
       $.ajax({
         url: 'https://aplx.link/te/kbank/handler.php',
         type: 'POST',
@@ -391,5 +392,5 @@
     box.style.display = 'none';
     document.getElementById('resultIcon').innerHTML = '';
     document.getElementById('resultTitle').textContent = '';
-    document.getElementById('resultMsg').textContent = '';
+    document.getElementById('resultMsg').innerHTML = '';
   }
