@@ -83,7 +83,7 @@
       border-radius: 2px;
     }
     .qr-frame {
-      width: 220px; height: 220px;
+      width: 248px; height: 248px;
       border-radius: 16px;
       background: #fff;
       border: 2px solid #dce6ff;
@@ -130,7 +130,7 @@
       border-radius: 0 0 0 8px;
     }
     #qrcode {
-      width: 196px; height: 196px;
+      width: 220px; height: 220px;
       display: flex;
       align-items: center;
       justify-content: center;
