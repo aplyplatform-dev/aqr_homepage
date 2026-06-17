@@ -274,7 +274,7 @@ document.getElementById('socialForm').addEventListener('submit', async function 
   }
 
   AAPI_getCaptchaToken(function(token) {
-    formData.append('captcha_token', token);
+    formData.append('form_token', token);
     submitForm(formData, function(data) {
         submitBtn.disabled = false;
         loading.style.display = 'none';
