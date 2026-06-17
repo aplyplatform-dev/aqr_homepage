@@ -1,6 +1,11 @@
 
   var manualMode = false;
+  const AAPI_captchaSiteKey = '0x4AAAAAAA62_43H2MO9goDN';
+  let AAPI_turnstile_callback = null;  // 토큰을 기다리는 콜백
+  let AAPI_turnstile_token    = null;  // 프리페치된 토큰 캐시
+  let AAPI_turnstile_widget_id = null; // render()가 반환한 위젯 ID
 
+  
 
   window.addEventListener('load', function(){
     var el = document.getElementById('page-spinner');
@@ -28,7 +33,61 @@
     setTimeout(hide, delay);
     
     setInputListeners();
+
+    AAPI_initTurnstile();
   });
+
+  
+  function AAPI_turnstileSetCallback(token) {
+    if (AAPI_turnstile_callback) {
+      const cb = AAPI_turnstile_callback;
+      AAPI_turnstile_callback = null;
+      AAPI_turnstile_token = null;
+      cb(token);
+    } else {
+      AAPI_turnstile_token = token;
+    }
+  }
+
+  function AAPI_turnstileExpiredCallback() {
+    AAPI_turnstile_token = null;
+  }
+
+  function AAPI_initTurnstile() {
+    if (typeof turnstile === "undefined" || !turnstile) return;
+    if (!document.querySelector('#turnstileWidget')) return;
+    turnstile.ready(function () {
+      AAPI_turnstile_widget_id = turnstile.render('#turnstileWidget', {
+        sitekey: AAPI_captchaSiteKey,
+        callback: AAPI_turnstileSetCallback,
+        'expired-callback': AAPI_turnstileExpiredCallback,
+      });
+    });
+  }
+
+  function AAPI_getCaptchaToken(tokencallback) {
+    if (typeof turnstile === "undefined" || !turnstile) return;
+
+    if (AAPI_turnstile_token) {
+      const token = AAPI_turnstile_token;
+      AAPI_turnstile_token = null;
+      tokencallback(token);
+      return;
+    }
+
+    AAPI_turnstile_callback = tokencallback;
+    if (AAPI_turnstile_widget_id !== null) {
+      turnstile.reset(AAPI_turnstile_widget_id);
+    } else {
+      turnstile.ready(function () {
+        AAPI_turnstile_widget_id = turnstile.render('#turnstileWidget', {
+          sitekey: AAPI_captchaSiteKey,
+          callback: AAPI_turnstileSetCallback,
+          'expired-callback': AAPI_turnstileExpiredCallback,
+        });
+      });
+    }
+  }
   
   /* 데스크탑 장식 아이콘 표시 */
   (function () {
@@ -105,7 +164,10 @@
         return;
     }
 
-    processForm();
+    AAPI_getCaptchaToken(function(token) {
+      // 토큰을 받은 후에 폼을 처리
+      processForm(token);
+    });
   }
 
   function handleModify() {
@@ -323,7 +385,7 @@
     goBtn.innerHTML = 'QR 정보 갱신하기';
   }
 
-  function processForm() {
+  function processForm(token) {
     let bizNo       = document.getElementById('manualBizNo').value.trim();
     let accountName = document.getElementById('manualAccountName').value.trim();
     let accountNo   = document.getElementById('manualAccountNo').value.trim();
@@ -337,7 +399,7 @@
     formData.append('biz_no',       bizNo);
     formData.append('account_no',   accountNo);
     formData.append('account_name', accountName);
-
+    formData.append('form_token', token);
     try {
       clearResult();
       $.ajax({
