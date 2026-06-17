@@ -1,3 +1,8 @@
+const AAPI_captchaSiteKey = '0x4AAAAAAA62_43H2MO9goDN';
+let AAPI_turnstile_callback = null;  // 토큰을 기다리는 콜백
+let AAPI_turnstile_token    = null;  // 프리페치된 토큰 캐시
+let AAPI_turnstile_widget_id = null; // render()가 반환한 위젯 ID
+
 // 글자 수 카운터
 function updateCharCount(inputId, countId) {
   var input = document.getElementById(inputId);
@@ -12,11 +17,9 @@ function updateCharCount(inputId, countId) {
     }
   });
 }
-updateCharCount('keyword1', 'count_keyword1');
-updateCharCount('keyword2', 'count_keyword2');
 
 // 기업 및 단체 소개 글자 수 카운터 (200자)
-(function () {
+window.addEventListener('load', function(){
   var el    = document.getElementById('org_intro');
   var count = document.getElementById('count_org_intro');
   if (!el || !count) return;
@@ -26,7 +29,11 @@ updateCharCount('keyword2', 'count_keyword2');
     if (len >= 200) count.classList.add('over');
     else            count.classList.remove('over');
   });
-}());
+
+  updateCharCount('keyword1', 'count_keyword1');
+  updateCharCount('keyword2', 'count_keyword2');
+  AAPI_initTurnstile();
+});
 
 // 팝업 토스트
 var toastTimer = null;
@@ -169,6 +176,75 @@ function compressImageToJpeg(file, quality) {
   });
 }
 
+
+function AAPI_turnstileSetCallback(token) {
+  if (AAPI_turnstile_callback) {
+    const cb = AAPI_turnstile_callback;
+    AAPI_turnstile_callback = null;
+    AAPI_turnstile_token = null;
+    cb(token);
+  } else {
+    AAPI_turnstile_token = token;
+  }
+}
+
+function AAPI_turnstileExpiredCallback() {
+  AAPI_turnstile_token = null;
+}
+
+function AAPI_initTurnstile() {
+  if (typeof turnstile === "undefined" || !turnstile) return;
+  if (!document.querySelector('#turnstileWidget')) return;
+  turnstile.ready(function () {
+    AAPI_turnstile_widget_id = turnstile.render('#turnstileWidget', {
+      sitekey: AAPI_captchaSiteKey,
+      callback: AAPI_turnstileSetCallback,
+      'expired-callback': AAPI_turnstileExpiredCallback,
+    });
+  });
+}
+
+function AAPI_getCaptchaToken(tokencallback) {
+  if (typeof turnstile === "undefined" || !turnstile) return;
+
+  if (AAPI_turnstile_token) {
+    const token = AAPI_turnstile_token;
+    AAPI_turnstile_token = null;
+    tokencallback(token);
+    return;
+  }
+
+  AAPI_turnstile_callback = tokencallback;
+  if (AAPI_turnstile_widget_id !== null) {
+    turnstile.reset(AAPI_turnstile_widget_id);
+  } else {
+    turnstile.ready(function () {
+      AAPI_turnstile_widget_id = turnstile.render('#turnstileWidget', {
+        sitekey: AAPI_captchaSiteKey,
+        callback: AAPI_turnstileSetCallback,
+        'expired-callback': AAPI_turnstileExpiredCallback,
+      });
+    });
+  }
+}
+
+function submitForm(formData, successCallback, errorCallback) {
+    $.ajax({
+      url: 'https://aq.gy/contact/socialformhandler.php',
+      type: 'POST',
+      data: formData,
+      processData: false,
+      contentType: false,
+      dataType: 'json',
+      success: function (data) {
+        if (successCallback) successCallback(data);
+      },
+      error: function (err) {
+        if (errorCallback) errorCallback(err);
+      }
+    });
+}
+
 // 폼 제출
 document.getElementById('socialForm').addEventListener('submit', async function (e) {
   e.preventDefault();
@@ -197,32 +273,26 @@ document.getElementById('socialForm').addEventListener('submit', async function 
     }
   }
 
-  $.ajax({
-    url: 'https://aq.gy/contact/socialformhandler.php',
-    type: 'POST',
-    data: formData,
-    processData: false,
-    contentType: false,
-    dataType: 'json',
-    success: function (data) {
-      submitBtn.disabled = false;
-      loading.style.display = 'none';
+  AAPI_getCaptchaToken(function(token) {
+    formData.append('captcha_token', token);
+    submitForm(formData, function(data) {
+        submitBtn.disabled = false;
+        loading.style.display = 'none';
 
-      if (data.success) {
-        document.getElementById('socialForm').style.display = 'none';
-        document.getElementById('resultSuccess').style.display = 'block';
-        gaEvent('SocialForm', 'submit_success', 'social_apply');
-      } else {
-        document.getElementById('resultErrorMsg').textContent = data.message || '오류가 발생했습니다.';
-        document.getElementById('resultError').style.display = 'block';
-        gaEvent('SocialForm', 'submit_error', data.message || 'error');
-      }
-    },
-    error: function (err) {
-      submitBtn.disabled = false;
-      loading.style.display = 'none';
-      document.getElementById('resultErrorMsg').textContent = '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      document.getElementById('resultError').style.display = 'block';
-    }
+        if (data.success) {
+          document.getElementById('socialForm').style.display = 'none';
+          document.getElementById('resultSuccess').style.display = 'block';
+          gaEvent('SocialForm', 'submit_success', 'social_apply');
+        } else {
+          document.getElementById('resultErrorMsg').textContent = data.message || '오류가 발생했습니다.';
+          document.getElementById('resultError').style.display = 'block';
+          gaEvent('SocialForm', 'submit_error', data.message || 'error');
+        }
+      }, function(err) {
+        submitBtn.disabled = false;
+        loading.style.display = 'none';
+        document.getElementById('resultErrorMsg').textContent = '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+        document.getElementById('resultError').style.display = 'block'; 
+      });
   });
-});
+});  

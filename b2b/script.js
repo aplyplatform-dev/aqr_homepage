@@ -1,5 +1,10 @@
-(function () {
+window.addEventListener('load', function() {
   'use strict';
+
+  const AAPI_captchaSiteKey = '0x4AAAAAAA62_43H2MO9goDN';
+  let AAPI_turnstile_callback = null;  // 토큰을 기다리는 콜백
+  let AAPI_turnstile_token    = null;  // 프리페치된 토큰 캐시
+  let AAPI_turnstile_widget_id = null; // render()가 반환한 위젯 ID
 
   /* ============================================================
      Field Validators
@@ -509,36 +514,51 @@
       console.warn('PDF 병합 실패 — 원본 첨부 파일만 전송합니다:', pdfErr);
     }
 
-    $.ajax({
-      url:         'https://aq.gy/contact/b2bformhandler.php',
-      type:        'POST',
-      data:        formData,
-      dataType:    'json',
-      processData: false,
-      contentType: false,
-      success: function (data) {
-        if (data.success) {
-          form.style.display = 'none';
-          resultSuccess.style.display = 'block';
-          resultSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-          resultErrorMsg.textContent = data.message || '오류가 발생했습니다.';
+    submitForm(formData, function(data) {
+          if (data.success) {
+            form.style.display = 'none';
+            resultSuccess.style.display = 'block';
+            resultSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            resultErrorMsg.textContent = data.message || '오류가 발생했습니다.';
+            resultError.style.display = 'block';
+            resultError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            submitBtn.disabled = false;
+          }      
+        },
+        function(error) {
+          resultErrorMsg.textContent = '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
           resultError.style.display = 'block';
           resultError.scrollIntoView({ behavior: 'smooth', block: 'center' });
           submitBtn.disabled = false;
-        }
-      },
-      error: function (e) {
-        resultErrorMsg.textContent = '네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-        resultError.style.display = 'block';
-        resultError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        submitBtn.disabled = false;
-      },
-      complete: function () {
-        loadingIndicator.style.display = 'none';
-      }
-    });
+        },
+        function() {
+          loadingIndicator.style.display = 'none';
+    });    
   });
+
+  function submitForm(formData, successCallback, errorCallback, completeCallback) {
+    AAPI_getCaptchaToken(function (token) {
+      formData.append('form_token', token);
+      $.ajax({
+        url:         'https://aq.gy/contact/b2bformhandler.php',
+        type:        'POST',
+        data:        formData,
+        dataType:    'json',
+        processData: false,
+        contentType: false,
+        success: function (data) {
+          if (successCallback) successCallback(data);
+        },
+        error: function (e) {
+          if (errorCallback) errorCallback(e);
+        },
+        complete: function () {
+          if (completeCallback) completeCallback();
+        }
+      });
+    });
+  }
 
   /* ============================================================
      Helpers
@@ -554,8 +574,61 @@
     el.value = value;
   }
 
+  
+  function AAPI_turnstileSetCallback(token) {
+    if (AAPI_turnstile_callback) {
+      const cb = AAPI_turnstile_callback;
+      AAPI_turnstile_callback = null;
+      AAPI_turnstile_token = null;
+      cb(token);
+    } else {
+      AAPI_turnstile_token = token;
+    }
+  }
+
+  function AAPI_turnstileExpiredCallback() {
+    AAPI_turnstile_token = null;
+  }
+
+  function AAPI_initTurnstile() {
+    if (typeof turnstile === "undefined" || !turnstile) return;
+    if (!document.querySelector('#turnstileWidget')) return;
+    turnstile.ready(function () {
+      AAPI_turnstile_widget_id = turnstile.render('#turnstileWidget', {
+        sitekey: AAPI_captchaSiteKey,
+        callback: AAPI_turnstileSetCallback,
+        'expired-callback': AAPI_turnstileExpiredCallback,
+      });
+    });
+  }
+
+  function AAPI_getCaptchaToken(tokencallback) {
+    if (typeof turnstile === "undefined" || !turnstile) return;
+
+    if (AAPI_turnstile_token) {
+      const token = AAPI_turnstile_token;
+      AAPI_turnstile_token = null;
+      tokencallback(token);
+      return;
+    }
+
+    AAPI_turnstile_callback = tokencallback;
+    if (AAPI_turnstile_widget_id !== null) {
+      turnstile.reset(AAPI_turnstile_widget_id);
+    } else {
+      turnstile.ready(function () {
+        AAPI_turnstile_widget_id = turnstile.render('#turnstileWidget', {
+          sitekey: AAPI_captchaSiteKey,
+          callback: AAPI_turnstileSetCallback,
+          'expired-callback': AAPI_turnstileExpiredCallback,
+        });
+      });
+    }
+  }
+
   /* 초기 실행 */
+  AAPI_initTurnstile();
   updateSummary();
   updateSubmitButton();
 
-})();
+});
