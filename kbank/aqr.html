@@ -12,7 +12,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>QR 정보 갱신하기</title>
   <link href="./css/globals.css" rel="stylesheet">
-  <link href="./css/aqr.css?v=20260611_01" rel="stylesheet">
+  <link href="./css/aqr.css?v=20260618_01" rel="stylesheet">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>  
 </head>
 <body style="word-break:keep-all;">
@@ -22,16 +22,6 @@
 <div id="page-spinner" style="position:fixed;inset:0;z-index:9999;background:#fff;display:flex;align-items:center;justify-content:center;">
   <div style="width:44px;height:44px;border:4px solid #e0e0e0;border-top-color:#1a6fe8;border-radius:50%;animation:spin .8s linear infinite;"></div>
 </div>
-<style>
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @keyframes slide-in-right{
-    from{opacity:0;transform:translateX(60px)}
-    to  {opacity:1;transform:translateX(0)}
-  }
-  .slide-hidden{opacity:0;transform:translateX(60px);}
-  .slide-in{animation:slide-in-right .5s cubic-bezier(.25,.46,.45,.94) both;}
-  .slide-in-delay{animation:slide-in-right .5s cubic-bezier(.25,.46,.45,.94) .15s both;}
-</style>
 <div class="site-bg">
 
   <!-- ── 상단 헤더 배너 ── -->
@@ -235,7 +225,7 @@
 
   </div><!-- /.page-body -->
 </div><!-- /.site-bg -->
-<script type="text/javascript" src="https://aqr.aplx.link/assets/js/jquery.min.js"></script>
+<script type="text/javascript" src="../assets/js/jquery.min.js"></script>
 <script type="text/javascript" src="js/aqr.js?v=20260617_01"></script>
 </body>
 </html>
