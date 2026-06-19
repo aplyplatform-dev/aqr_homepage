@@ -193,7 +193,7 @@
   function showGoButtons() {
     var modifyBtn = document.getElementById('modifyBtn');
     var goBtn = document.getElementById('goBtn');
-    if (manualMode == false && modifyBtn) modifyBtn.style.display = 'block';
+    //if (manualMode == false && modifyBtn) modifyBtn.style.display = 'block'; // TODO
     if (goBtn) goBtn.style.display = 'block';
   }
 
