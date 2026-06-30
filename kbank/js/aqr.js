@@ -5,7 +5,47 @@
   let AAPI_turnstile_token    = null;  // 프리페치된 토큰 캐시
   let AAPI_turnstile_widget_id = null; // render()가 반환한 위젯 ID
 
-  
+  /* ──────────────────────────────────────────────
+     GA4 이벤트 헬퍼
+     - gtag 미로딩(광고차단 등) 상황에서도 페이지가 깨지지 않도록 안전하게 래핑
+  ────────────────────────────────────────────── */
+  var GA_EVENT_PREFIX = 'KBANK_CQ_';
+
+  function gaEvent(name, params) {
+    try {
+      if (typeof gtag === 'function') {
+        gtag('event', GA_EVENT_PREFIX + name, params || {});
+      }
+    } catch (e) { /* 추적 실패는 무시 */ }
+  }
+
+  // GA4 권장 'exception' 이벤트 (오류/예외 추적)
+  function gaException(description, fatal, extra) {
+    try {
+      if (typeof gtag === 'function') {
+        var params = { description: GA_EVENT_PREFIX + String(description), fatal: !!fatal };
+        if (extra) {
+          for (var k in extra) {
+            if (Object.prototype.hasOwnProperty.call(extra, k)) params[k] = extra[k];
+          }
+        }
+        gtag('event', 'exception', params);
+      }
+    } catch (e) { /* 추적 실패는 무시 */ }
+  }
+
+  /* 전역 미처리 오류/Promise 거부 추적 */
+  window.addEventListener('error', function (e) {
+    var msg = e && e.message ? e.message : 'unknown error';
+    var loc = e && e.filename ? (e.filename + ':' + (e.lineno || 0)) : '';
+    gaException('window.onerror: ' + msg, true, { error_location: loc });
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    var reason = e && e.reason ? (e.reason.message || String(e.reason)) : 'unknown rejection';
+    gaException('unhandledrejection: ' + reason, true);
+  });
+
+
 
   window.addEventListener('load', function(){
     var el = document.getElementById('page-spinner');
@@ -15,6 +55,8 @@
       if(privacyCard) {
         privacyCard.classList.remove('slide-hidden');
         privacyCard.classList.add('slide-in-delay');
+        // 주요 이벤트: STEP 1(개인정보처리방침 동의) 화면 노출
+        gaEvent('privacy_consent_view', { step: 1 });
         // 애니메이션 종료 후 클래스 제거: transform 합성 레이어가 버튼 터치 영역을
         // 잘못 점유하는 Samsung Internet 버그 방지 (animation: 0.5s + delay: 0.15s)
         setTimeout(function() {
@@ -53,20 +95,34 @@
     AAPI_turnstile_token = null;
   }
 
+  function AAPI_turnstileErrorCallback() {
+    // 오류: Turnstile(캡차) 위젯 오류
+    gaException('turnstile_error', false);
+  }
+
   function AAPI_initTurnstile() {
-    if (typeof turnstile === "undefined" || !turnstile) return;
+    if (typeof turnstile === "undefined" || !turnstile) {
+      // 오류: Turnstile 스크립트 미로딩
+      gaException('turnstile_unavailable', false);
+      return;
+    }
     if (!document.querySelector('#turnstileWidget')) return;
     turnstile.ready(function () {
       AAPI_turnstile_widget_id = turnstile.render('#turnstileWidget', {
         sitekey: AAPI_captchaSiteKey,
         callback: AAPI_turnstileSetCallback,
         'expired-callback': AAPI_turnstileExpiredCallback,
+        'error-callback': AAPI_turnstileErrorCallback,
       });
     });
   }
 
   function AAPI_getCaptchaToken(tokencallback) {
-    if (typeof turnstile === "undefined" || !turnstile) return;
+    if (typeof turnstile === "undefined" || !turnstile) {
+      // 오류: 캡차 토큰 발급 불가 (Turnstile 미로딩)
+      gaException('captcha_token_unavailable', false);
+      return;
+    }
 
     if (AAPI_turnstile_token) {
       const token = AAPI_turnstile_token;
@@ -109,18 +165,22 @@
     if (accountNoInput) accountNoInput.addEventListener('input', monitorInputForms);
   }
 
-  function showManualForm() {    
+  function showManualForm() {
     var card = document.getElementById('manualInputCard');
     if (card) {
       card.style.display = 'block';
       card.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
     document.getElementById('submitBtn').disabled = true;
+    // 주요 이벤트: 계좌 정보 확인/수동 입력 폼 노출
+    gaEvent('manual_form_shown', { manual_mode: manualMode });
   }
 
   function toggleSubmitBtn() {
     var checked = document.getElementById('consentCheck').checked;
     document.getElementById('submitBtn').disabled = !checked;
+    // 주요 이벤트: 개인정보처리방침 동의 체크박스 토글
+    gaEvent('consent_checkbox_toggle', { checked: checked });
   }
 
   function validateForm() {
@@ -154,12 +214,19 @@
   }
 
   function handleGo() {
+    // 주요 이벤트: 'QR 정보 갱신하기' 버튼 클릭
+    gaEvent('qr_update_click', { manual_mode: manualMode });
+
     if (!validateForm()) {
+        // 오류: 필수 입력값 누락
+        gaException('validation_fail_empty', false, { field: 'required' });
         alert('모든 정보를 올바르게 입력해주세요.');
         return;
     }
 
     if (!validateBizNum()) {
+        // 오류: 사업자번호 형식 오류
+        gaException('validation_fail_biz_no', false, { field: 'biz_no' });
         alert('사업자번호가 올바르지 않습니다. [ 예시: 123-45-67890 / 10자리 숫자 ]');
         return;
     }
@@ -171,6 +238,9 @@
   }
 
   function handleModify() {
+    // 주요 이벤트: '직접 수정하기' 버튼 클릭
+    gaEvent('manual_modify_click', {});
+
     document.getElementById('manualBizNo').disabled = false;
     document.getElementById('manualAccountNo').disabled = false;
     document.getElementById('manualAccountName').disabled = false;
@@ -295,6 +365,9 @@
     var btn = document.getElementById('submitBtn');
     btn.disabled = true;
 
+    // 주요 이벤트: '동의하고 진행하기' 클릭 → STEP 2 진입
+    gaEvent('consent_submit', { step: 2, is_iphone: isIPhone() });
+
     if (isIPhone()) {
       btn.innerHTML = '"붙여넣기"를 터치하세요!';
       showIPhonePasteHint();
@@ -323,6 +396,8 @@
         throw new Error('clipboard not supported');
       }
     } catch (e) {
+      // 오류: 클립보드 읽기 실패 → 수동 입력으로 전환
+      gaException('clipboard_read_fail', false, { reason: (e && e.message) ? e.message : 'unknown' });
       hideIPhonePasteHint();
       manualMode = true;
       hideGoButtons();
@@ -330,12 +405,16 @@
       return;
     }
     hideIPhonePasteHint();
+    // 주요 이벤트: 클립보드 읽기 성공
+    gaEvent('clipboard_read_success', {});
 
      var parsedData = null;
     try {
       // 텍스트를 JSON 객체로 파싱 시도
-      parsedData = JSON.parse(clipText);      
-    } catch (error) {      
+      parsedData = JSON.parse(clipText);
+    } catch (error) {
+      // 오류: 클립보드 데이터 JSON 파싱 실패 → 수동 입력으로 전환
+      gaException('clipboard_parse_fail', false, { reason: (error && error.message) ? error.message : 'unknown' });
       manualMode = true;
       hideGoButtons();
       showManualForm();
@@ -348,6 +427,8 @@
         || parsedData["accountHolderName"] == null || parsedData["accountNumber"] == null || parsedData["businessNumber"] == null
         || parsedData["accountHolderName"] == '' || parsedData["accountNumber"] == '' || parsedData["businessNumber"] == ''
     ) {
+      // 오류: 클립보드 데이터에 필수 항목 누락 → 수동 입력으로 전환
+      gaException('clipboard_data_incomplete', false);
       manualMode = true;
       hideGoButtons();
       return;
@@ -362,11 +443,16 @@
     document.getElementById('manualAccountName').value = accountName;
 
     if(!validateBizNum()) {
+      // 오류: 클립보드 데이터의 사업자번호 형식 오류 → 수동 입력으로 전환
+      gaException('clipboard_biz_no_invalid', false, { field: 'biz_no' });
       alert('사업자번호가 올바르지 않습니다. [ 예시: 123-45-67890 / 10자리 숫자 ]');
       manualMode = true;
       hideGoButtons();
       return;
     }
+
+    // 주요 이벤트: 클립보드 데이터 자동 입력 성공
+    gaEvent('clipboard_autofill_success', {});
 
     document.getElementsByClassName('optional')[0].style.display = 'none';
     document.getElementsByClassName('optional')[1].style.display = 'none';
@@ -394,6 +480,9 @@
     goBtn.disabled = true;
     goBtn.innerHTML = '<span class="spinner"></span>처리 중...';
 
+    // 주요 이벤트: QR 정보 갱신 요청 전송
+    gaEvent('qr_update_submit', { manual_mode: manualMode });
+
     // AJAX POST
     var formData = new FormData();
     formData.append('biz_no',       bizNo);
@@ -411,6 +500,8 @@
         dataType: 'json',
         success: function (data) {
           if (data.result !== 'success') {
+            // 오류: 서버가 실패 응답 반환
+            gaException('qr_update_server_error', false, { server_message: data.message || '' });
             restoreGoBtn();
             showGoButtons();
             showResult('error', '&#9888;', '오류가 발생했습니다', data.message || '잠시 후 다시 시도해주세요.');
@@ -422,17 +513,27 @@
           document.querySelector('.back-link').style.display  = 'none';
           document.querySelector('.step-indicator').style.display = 'none';
 
+          // 주요 이벤트: QR 정보 갱신 완료 (전환)
+          gaEvent('qr_update_success', { manual_mode: manualMode });
+
           var storeIdMsg = '<br><br>사업자 번호: <strong>' + bizNo + '</strong>';
           showResult('success', '&#10003;', '갱신이 완료되었습니다!',
             'QR 코드 정보 갱신 요청이 정상적으로 처리되었습니다.' + storeIdMsg);
         },
         error: function (err) {
+          // 오류: AJAX 통신 실패
+          gaException('qr_update_ajax_error', true, {
+            http_status: (err && err.status) ? err.status : 0,
+            status_text: (err && err.statusText) ? err.statusText : ''
+          });
           restoreGoBtn();
           showGoButtons();
           showResult('error', '&#9888;', '오류가 발생했습니다', '서버 오류. 잠시 후에 다시 시도해 주세요.');
         }
       });
     } catch (e) {
+      // 오류: 폼 전송 처리 중 예외 발생
+      gaException('qr_update_exception', true, { reason: (e && e.message) ? e.message : 'unknown' });
       restoreGoBtn();
       showGoButtons();
       showResult('error', '&#9888;', '오류가 발생했습니다', e.message || '잠시 후 다시 시도해주세요.');
