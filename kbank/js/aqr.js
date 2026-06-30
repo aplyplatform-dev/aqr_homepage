@@ -324,9 +324,10 @@
       }
     } catch (e) {
       hideIPhonePasteHint();
-      manualMode = true;
+      manualMode = false;
       hideGoButtons();
-      showManualForm();
+      //showManualForm();
+      alert("오류가 발생했습니다. 잠시후에 다시 시도해주세요");
       return;
     }
     hideIPhonePasteHint();
@@ -336,22 +337,23 @@
       // 텍스트를 JSON 객체로 파싱 시도
       parsedData = JSON.parse(clipText);      
     } catch (error) {      
-      manualMode = true;
+      manualMode = false;
       hideGoButtons();
-      showManualForm();
+      alert("오류가 발생했습니다. 잠시후에 다시 시도해주세요");
       return;
     }
-
-    showManualForm();
             
     if (parsedData == null
         || parsedData["accountHolderName"] == null || parsedData["accountNumber"] == null || parsedData["businessNumber"] == null
         || parsedData["accountHolderName"] == '' || parsedData["accountNumber"] == '' || parsedData["businessNumber"] == ''
     ) {
-      manualMode = true;
+      manualMode = false;
       hideGoButtons();
+      alert("오류가 발생했습니다. 잠시후에 다시 시도해주세요");
       return;
     }
+
+    showManualForm();
 
     let bizNo       = parsedData["businessNumber"];
     let accountNo   = parsedData["accountNumber"];
