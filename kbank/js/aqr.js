@@ -320,6 +320,7 @@
       if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
         clipText = await navigator.clipboard.readText();
       } else {
+        alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
         throw new Error('clipboard not supported');
       }
     } catch (e) {
@@ -327,7 +328,7 @@
       manualMode = false;
       hideGoButtons();
       //showManualForm();
-      alert("오류가 발생했습니다. 잠시후에 다시 시도해주세요");
+      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
       return;
     }
     hideIPhonePasteHint();
@@ -339,7 +340,7 @@
     } catch (error) {      
       manualMode = false;
       hideGoButtons();
-      alert("오류가 발생했습니다. 잠시후에 다시 시도해주세요");
+      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
       return;
     }
             
@@ -349,7 +350,7 @@
     ) {
       manualMode = false;
       hideGoButtons();
-      alert("오류가 발생했습니다. 잠시후에 다시 시도해주세요");
+      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
       return;
     }
 
