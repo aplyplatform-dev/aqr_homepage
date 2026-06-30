@@ -393,15 +393,17 @@
       if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
         clipText = await navigator.clipboard.readText();
       } else {
+        alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
         throw new Error('clipboard not supported');
       }
     } catch (e) {
       // 오류: 클립보드 읽기 실패 → 수동 입력으로 전환
       gaException('clipboard_read_fail', false, { reason: (e && e.message) ? e.message : 'unknown' });
       hideIPhonePasteHint();
-      manualMode = true;
+      manualMode = false;
       hideGoButtons();
-      showManualForm();
+      //showManualForm();
+      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
       return;
     }
     hideIPhonePasteHint();
@@ -410,29 +412,28 @@
 
      var parsedData = null;
     try {
-      // 텍스트를 JSON 객체로 파싱 시도
-      parsedData = JSON.parse(clipText);
-    } catch (error) {
-      // 오류: 클립보드 데이터 JSON 파싱 실패 → 수동 입력으로 전환
-      gaException('clipboard_parse_fail', false, { reason: (error && error.message) ? error.message : 'unknown' });
-      manualMode = true;
+      // 텍스트를 JSON 객체로 파싱 시도      
+      parsedData = JSON.parse(clipText);      
+    } catch (error) {      
+      manualMode = false;
       hideGoButtons();
-      showManualForm();
+      gaException('clipboard_parse_fail', false, { reason: (error && error.message) ? error.message : 'unknown' });
+      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
       return;
     }
-
-    showManualForm();
             
     if (parsedData == null
         || parsedData["accountHolderName"] == null || parsedData["accountNumber"] == null || parsedData["businessNumber"] == null
         || parsedData["accountHolderName"] == '' || parsedData["accountNumber"] == '' || parsedData["businessNumber"] == ''
     ) {
-      // 오류: 클립보드 데이터에 필수 항목 누락 → 수동 입력으로 전환
-      gaException('clipboard_data_incomplete', false);
-      manualMode = true;
+      manualMode = false;
       hideGoButtons();
+      gaException('clipboard_data_incomplete', false);
+      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
       return;
     }
+
+    showManualForm();
 
     let bizNo       = parsedData["businessNumber"];
     let accountNo   = parsedData["accountNumber"];
