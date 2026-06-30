@@ -34,7 +34,7 @@
     } catch (e) { /* 추적 실패는 무시 */ }
   }
 
-  /* 전역 미처리 오류/Promise 거부 추적 */
+  /* 전역 미처리 오류/거부(rejection) 추적 */
   window.addEventListener('error', function (e) {
     var msg = e && e.message ? e.message : 'unknown error';
     var loc = e && e.filename ? (e.filename + ':' + (e.lineno || 0)) : '';
@@ -361,7 +361,7 @@
     setTimeout(function () { if (hint.parentNode) hint.parentNode.removeChild(hint); }, 300);
   }
 
-  async function handleConsent() {
+  function handleConsent() {
     var btn = document.getElementById('submitBtn');
     btn.disabled = true;
 
@@ -371,11 +371,28 @@
     if (isIPhone()) {
       btn.innerHTML = '"붙여넣기"를 터치하세요!';
       showIPhonePasteHint();
-      await new Promise(function (resolve) { setTimeout(resolve, 200); });
+      // 힌트 노출 후 200ms 뒤에 이어서 처리 (콜백 방식)
+      setTimeout(handleConsentProceed, 200);
     }
     else {
       btn.innerHTML = '<span class="spinner"></span>처리 중...';
+      handleConsentProceed();
     }
+  }
+
+  // 클립보드 읽기 실패 공통 처리
+  function handleClipboardReadFail(reason) {
+    // 오류: 클립보드 읽기 실패 → 수동 입력으로 전환
+    gaException('clipboard_read_fail', false, { reason: reason || 'unknown' });
+    hideIPhonePasteHint();
+    manualMode = false;
+    hideGoButtons();
+    //showManualForm();
+    alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
+  }
+
+  function handleConsentProceed() {
+    var btn = document.getElementById('submitBtn');
 
     document.getElementById('privacyCard').style.display = 'none';
     btn.style.display = 'none';
@@ -388,28 +405,26 @@
     tab1Sub.classList.remove('active'); tab2Sub.classList.add('active');
 
     // 클립보드에서 데이터 읽기
-    var clipText = '';
-    try {
-      if (navigator.clipboard && typeof navigator.clipboard.readText === 'function') {
-        clipText = await navigator.clipboard.readText();
-      } else {
-        alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
-        throw new Error('clipboard not supported');
-      }
-    } catch (e) {
-      // 오류: 클립보드 읽기 실패 → 수동 입력으로 전환
-      gaException('clipboard_read_fail', false, { reason: (e && e.message) ? e.message : 'unknown' });
-      hideIPhonePasteHint();
-      manualMode = false;
-      hideGoButtons();
-      //showManualForm();
+    if (!(navigator.clipboard && typeof navigator.clipboard.readText === 'function')) {
       alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
+      handleClipboardReadFail('clipboard not supported');
       return;
     }
-    hideIPhonePasteHint();
-    // 주요 이벤트: 클립보드 읽기 성공
-    gaEvent('clipboard_read_success', {});
 
+    navigator.clipboard.readText().then(
+      function (clipText) {
+        hideIPhonePasteHint();
+        // 주요 이벤트: 클립보드 읽기 성공
+        gaEvent('clipboard_read_success', {});
+        handleClipboardData(clipText);
+      },
+      function (e) {
+        handleClipboardReadFail((e && e.message) ? e.message : 'unknown');
+      }
+    );
+  }
+
+  function handleClipboardData(clipText) {
      var parsedData = null;
     try {
       // 텍스트를 JSON 객체로 파싱 시도      
