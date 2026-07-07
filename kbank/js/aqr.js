@@ -429,8 +429,8 @@
     try {
       // 텍스트를 JSON 객체로 파싱 시도      
       parsedData = JSON.parse(clipText);      
-    } catch (error) {      
-      manualMode = false;
+    } catch (error) {
+      manualMode = false;      
       hideGoButtons();
       gaException('clipboard_parse_fail', false, { reason: (error && error.message) ? error.message : 'unknown' });
       alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
@@ -544,7 +544,7 @@
           });
           restoreGoBtn();
           showGoButtons();
-          showResult('error', '&#9888;', '오류가 발생했습니다', '서버 오류. 잠시 후에 다시 시도해 주세요.');
+          showResult('error', '&#9888;', '오류가 발생했습니다', '서버 오류. 잠시 후에 다시 시도해 주세요.<br><br><small>브라우저 정보: ' + navigator.userAgent + '</small>');
         }
       });
     } catch (e) {
@@ -552,7 +552,7 @@
       gaException('qr_update_exception', true, { reason: (e && e.message) ? e.message : 'unknown' });
       restoreGoBtn();
       showGoButtons();
-      showResult('error', '&#9888;', '오류가 발생했습니다', e.message || '잠시 후 다시 시도해주세요.');
+      showResult('error', '&#9888;', '오류가 발생했습니다', (e.message || '잠시 후 다시 시도해주세요.') + '<br><br><small>브라우저 정보: ' + navigator.userAgent + '</small>');
     }
   }
 
