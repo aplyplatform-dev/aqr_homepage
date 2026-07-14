@@ -263,7 +263,7 @@
   function showGoButtons() {
     var modifyBtn = document.getElementById('modifyBtn');
     var goBtn = document.getElementById('goBtn');
-    //if (manualMode == false && modifyBtn) modifyBtn.style.display = 'block'; // TODO
+    if (manualMode == false && modifyBtn) modifyBtn.style.display = 'block';
     if (goBtn) goBtn.style.display = 'block';
   }
 
@@ -384,11 +384,11 @@
   function handleClipboardReadFail(reason) {
     // 오류: 클립보드 읽기 실패 → 수동 입력으로 전환
     gaException('clipboard_read_fail', false, { reason: reason || 'unknown' });
-    hideIPhonePasteHint();
-    manualMode = false;
+    hideIPhonePasteHint();    
     hideGoButtons();
-    //showManualForm();
-    alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
+    manualMode = true;
+    showManualForm();
+    //alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
   }
 
   function handleConsentProceed() {
@@ -405,8 +405,7 @@
     tab1Sub.classList.remove('active'); tab2Sub.classList.add('active');
 
     // 클립보드에서 데이터 읽기
-    if (!(navigator.clipboard && typeof navigator.clipboard.readText === 'function')) {
-      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
+    if (!(navigator.clipboard && typeof navigator.clipboard.readText === 'function')) {      
       handleClipboardReadFail('clipboard not supported');
       return;
     }
@@ -433,7 +432,7 @@
       manualMode = false;      
       hideGoButtons();
       gaException('clipboard_parse_fail', false, { reason: (error && error.message) ? error.message : 'unknown' });
-      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
+      handleClipboardReadFail('clipboard_parse_fail');
       return;
     }
             
@@ -444,11 +443,12 @@
       manualMode = false;
       hideGoButtons();
       gaException('clipboard_data_incomplete', false);
-      alert("앱을 종료하고 다시 실행해서 '붙여넣기' 기능을 활성화해주세요.");
+      handleClipboardReadFail('clipboard_parse_fail');
       return;
     }
 
     showManualForm();
+    showGoButtons();
 
     let bizNo       = parsedData["businessNumber"];
     let accountNo   = parsedData["accountNumber"];
