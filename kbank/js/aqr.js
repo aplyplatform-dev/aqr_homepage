@@ -532,9 +532,9 @@
           // 주요 이벤트: QR 정보 갱신 완료 (전환)
           gaEvent('qr_update_success', { manual_mode: manualMode });
 
-          var storeIdMsg = '<br><br>사업자 번호: <strong>' + bizNo + '</strong>';
-          showResult('success', '&#10003;', 'QR 코드 정보가 갱신되었습니다!',
-            'QR 코드 정보 갱신 요청이 정상적으로 처리되었습니다.' + storeIdMsg);
+          var storeIdMsg = '<br><br>사업자 번호: <strong>' + bizNo + '</strong><br>예금주명: <strong>' + data.message + '</strong>';
+          showResult('success', '&#10003;', 'QR 코드 정보를 갱신하였습니다!',
+            'QR 코드 정보 갱신 요청을 정상 처리하였습니다.' + storeIdMsg);
         },
         error: function (err) {
           // 오류: AJAX 통신 실패
