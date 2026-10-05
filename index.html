@@ -99,6 +99,39 @@
     .h6 {
       color: #1c8b7e;
     }
+
+    /* AQR-BELL Promo Banner */
+    .banner-aqr-bell {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .banner-aqr-bell:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(14, 91, 82, 0.28) !important;
+    }
+    .banner-aqr-bell h2,
+    .banner-aqr-bell p,
+    .banner-aqr-bell span,
+    .banner-aqr-bell div {
+      color: #ffffff;
+    }
+    .banner-aqr-bell .badge-light {
+      transition: all 0.2s ease;
+    }
+    .banner-aqr-bell .badge-light:hover {
+      transform: scale(1.03);
+    }
+    #btn_banner_aqr_bell_detail {
+      transition: all 0.25s ease;
+    }
+    #btn_banner_aqr_bell_detail:hover {
+      background-color: #f0fdfa !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    #btn_banner_aqr_bell_playstore:hover {
+      background-color: rgba(255, 255, 255, 0.15) !important;
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 
@@ -459,8 +492,8 @@
           </div>
         </div>
       </div>
-    </section>    
-
+    </section>
+    
     <div id="use_detail"></div>
 
     <!-- 가격 정책-->
@@ -917,6 +950,73 @@
     </section>
     <!-- end -->
 
+    <!-- AQR-BELL 신규 앱 서비스 홍보 배너 -->
+    <!--    
+    <section class="py-5" style="background: linear-gradient(180deg, #f8fafb 0%, #edf7f5 100%);">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-12 col-lg-11">
+            <div class="card border-0 shadow-lg banner-aqr-bell" style="border-radius: 24px; overflow: hidden; background: linear-gradient(135deg, #0e5b52 0%, #157367 50%, #1c8b7e 100%);">
+              <div class="card-body p-4 p-md-5 position-relative">
+                <div class="row align-items-center">
+                  <div class="col-12 col-lg-7 text-center text-lg-left mb-4 mb-lg-0" data-aos="fade-right">
+                    <div class="d-inline-flex align-items-center mb-3 px-3 py-1 rounded-pill" style="background: rgba(255,255,255,0.18); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25);">
+                      <span class="badge badge-pill mr-2 font-weight-bold" style="font-size: 0.75rem; background-color: #ffd15c; color: #0e5b52 !important;">NEW</span>
+                      <span class="font-weight-bold" style="font-size: 0.85rem; letter-spacing: 0.5px; color: #ffffff !important;">신규 앱 런칭!</span>
+                    </div>
+                    <div class="d-flex flex-column flex-sm-row align-items-center align-items-lg-start mb-3">
+                      <img src="assets/img/aqr_bell_app_icon.png" alt="AQR-BELL 앱 아이콘" class="img-fluid mr-sm-4 mb-3 mb-sm-0 rounded-circle shadow" style="width: 88px; height: 88px; background: #ffffff; padding: 6px; flex-shrink: 0; box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;">
+                      <div>
+                        <h2 class="h2 font-weight-bolder mb-1" style="color: #ffffff !important; letter-spacing: -0.5px;">
+                          AQR<sup style="font-size:14px;vertical-align: 7px; color: #ffd15c !important;">®</sup> 벨 (BELL)
+                        </h2>
+                        <p class="font-weight-bold mb-0" style="color: #cbfbf3 !important; font-size: 1.15rem;">
+                          사장님을 위한 입금 알림 공유 앱
+                        </p>
+                      </div>
+                    </div>
+                    <p class="mb-4" style="font-size: 0.95rem; line-height: 1.6; color: rgba(255,255,255,0.9) !important;">
+                      입금 알림, 혼자 받지 마세요! 입금 알림을 직원·알바·가족 등 지정한 분들에게 실시간으로 전달합니다.
+                    </p>
+                    <div class="d-flex flex-wrap justify-content-center justify-content-lg-start" style="gap: 8px;">
+                      <span class="badge badge-light px-3 py-2 font-weight-normal shadow-sm" style="border-radius: 20px; font-size: 0.82rem; background: rgba(255,255,255,0.95); color: #1c8b7e !important;">
+                        <i class="fa-solid fa-bell mr-1" style="color: #1c8b7e !important;"></i> 실시간 알림 전달
+                      </span>
+                      <span class="badge badge-light px-3 py-2 font-weight-normal shadow-sm" style="border-radius: 20px; font-size: 0.82rem; background: rgba(255,255,255,0.95); color: #1c8b7e !important;">
+                        <i class="fa-solid fa-users mr-1" style="color: #1c8b7e !important;"></i> 직원·알바·가족 등 수신자 지정
+                      </span>
+                      <span class="badge badge-light px-3 py-2 font-weight-normal shadow-sm" style="border-radius: 20px; font-size: 0.82rem; background: rgba(255,255,255,0.95); color: #1c8b7e !important;">
+                        <i class="fa-solid fa-toggle-on mr-1" style="color: #1c8b7e !important;"></i> 간편한 공유 ON/OFF & 수신 확인
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-12 col-lg-5 text-center" data-aos="fade-left">
+                    <div class="p-4 rounded-xl" style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px;">
+                      <div class="mb-3">
+                        <span class="d-block font-weight-bold mb-1" style="font-size: 1.05rem; color: #ffffff !important;">무료로 사용하세요!</span>
+                        <span class="small" style="color: rgba(255,255,255,0.85) !important;">자리를 비울 때도 놓치지 않는 스마트한 매장 관리</span>
+                      </div>
+                      <div class="d-flex flex-column align-items-stretch" style="gap: 12px;">
+                        <a href="https://bell.aplx.link" target="_blank" class="btn btn-light btn-lg font-weight-bold shadow-sm d-flex align-items-center justify-content-center" style="color: #0e5b52 !important; border-radius: 12px; font-size: 1rem; padding: 0.75rem 1.5rem;" id="btn_banner_aqr_bell_detail">
+                          <span style="color: #0e5b52 !important;">AQR<sup style="font-size:10px; color: #0e5b52 !important;">®</sup> 벨 소개 사이트 가기</span>
+                          <i class="fa-solid fa-arrow-up-right-from-square ml-2" style="font-size: 0.85rem; color: #0e5b52 !important;"></i>
+                        </a>
+                        <a href="https://play.google.com/store/apps/details?id=biz.aply.aqrbell" target="_blank" class="btn btn-outline-light font-weight-bold d-flex align-items-center justify-content-center" style="border-radius: 12px; font-size: 0.95rem; padding: 0.65rem 1.5rem; border-color: rgba(255,255,255,0.7); color: #ffffff !important;" id="btn_banner_aqr_bell_playstore">
+                          <i class="fab fa-google-play mr-2" style="color: #ffffff !important;"></i>
+                          <span style="color: #ffffff !important;">Google Play 다운로드</span>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    -->
+
     <footer class="border-top pt-5 pb-4" style="margin-bottom:5rem;">
       <div class="container">
         <div class="row">
@@ -925,6 +1025,7 @@
               style="border-radius:0; border:1px solid #87929c; padding: 0.8rem 1.1rem;" data-toggle="dropdown" id="btn_main_on_related_site">관련 사이트
               <i class="icon-plus"></i></button>
             <ul class="dropdown-menu p-2" style="border-radius:0; width:90%;">              
+              <li class="py-1"><a href="https://bell.aplx.link" class="text-dark font-weight-light" target="_blank" id="btn_bell_on_related_site">AQR<sup style="font-size:10px;">®</sup> 벨 (실시간 입금 알림 공유 앱)</a></li>
               <li class="py-1"><a href="widget-howto.html" class="text-dark font-weight-light" target="_blank" id="btn_widget_on_related_site">AQR<sup style="font-size:10px;">®</sup> 위젯
                   서비스</a></li>
               <li class="py-1"><a href="help.html"
