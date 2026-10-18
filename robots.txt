@@ -1,0 +1,62 @@
+# https://aqr.aplx.link/robots.txt
+# AQR - 주식회사 어플라이 (APLY Inc.)
+
+# ──────────────────────────────────────────────
+# 일반 검색엔진
+# ──────────────────────────────────────────────
+User-agent: *
+Allow: /
+# 모달·위젯으로만 불러오는 HTML 조각 (단독 페이지가 아님)
+Disallow: /service.html
+Disallow: /privacy.html
+Disallow: /contact_privacy.html
+
+# 네이버
+User-agent: Yeti
+Allow: /
+Disallow: /service.html
+Disallow: /privacy.html
+Disallow: /contact_privacy.html
+
+# ──────────────────────────────────────────────
+# AI 크롤러 — 학습 / 검색 색인 / 실시간 열람 모두 허용
+# 인용 유입이 목표이므로 전면 허용이 기본값
+# ──────────────────────────────────────────────
+
+# 학습 (모델 훈련)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# 검색 색인 (AI 검색의 자체 인덱스)
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# 실시간 열람 (사용자 질문 시 페이지 fetch)
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+Sitemap: https://aqr.aplx.link/sitemap.xml
