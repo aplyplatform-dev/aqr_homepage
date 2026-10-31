@@ -517,11 +517,15 @@ I 컬럼: 링크 버튼 [선택 / (제목,URL)]
               </div>
               <div class="card-body">
                 <span class="h5 price-collapse collapse show">페이지 추가 / 1개</span>
-                <span class="h5 price-collapse collapse show"><del>12,000원</del></span>
-                <span class="h1 price-collapse collapse show">5,900원/년</span>
+                <span class="h5 price-collapse collapse show" data-aqr-original="krw.year"><del
+                    data-aqr-price="krw.year.original_price" data-aqr-suffix="원">12,000원</del></span>
+                <span class="h1 price-collapse collapse show" data-aqr-price="krw.year.price"
+                  data-aqr-suffix="원/년">5,900원/년</span>
                 <hr>
-                <span class="h5 price-collapse collapse show"><del>1,000원</del></span>
-                <span class="h1 price-collapse collapse show">990원/월</span>
+                <span class="h5 price-collapse collapse show" data-aqr-original="krw.month"><del
+                    data-aqr-price="krw.month.original_price" data-aqr-suffix="원">1,000원</del></span>
+                <span class="h1 price-collapse collapse show" data-aqr-price="krw.month.price"
+                  data-aqr-suffix="원/월">990원/월</span>
               </div>
             </div>
           </div>
@@ -1597,6 +1601,7 @@ I 컬럼: 링크 버튼 [선택 / (제목,URL)]
   <script type="text/javascript" src="assets/js/jquery.youtube-background.js"></script>
   <script type="text/javascript" src="https://home.aply.biz/assets/js/aplyServices.js?v=20250908_01"></script>
   <script type="text/javascript" src="assets/js/handler.js?v=20250131_01"></script>
+  <script type="text/javascript" src="assets/js/aqr-price.js?v=20261031_01"></script>
   <script>
     $(async function () {
       CUR_PAGE = "help";
