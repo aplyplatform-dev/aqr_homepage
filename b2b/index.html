@@ -167,8 +167,23 @@
             <label class="form-label" for="address">
               주소 <span class="required">*</span>
             </label>
-            <input type="text" class="form-control" id="address" name="address"
-              placeholder="사업장 주소를 입력해주세요" required>
+            <div class="address-row">
+              <input type="text" class="form-control" id="postcode" name="postcode"
+                placeholder="우편번호" readonly required>
+              <button type="button" class="btn-address-search" id="addressSearchBtn">주소 검색</button>
+            </div>
+            <!-- name 이 없는 것은 일부러다. 제출에는 우편번호 · 상세주소까지 합친 값을
+                 hidden input(name="address")으로 보낸다 — script.js 의 fullAddress() -->
+            <input type="text" class="form-control address-line" id="address"
+              placeholder="주소 검색 버튼을 눌러주세요" readonly required>
+            <input type="text" class="form-control address-line" id="address_detail" name="address_detail"
+              placeholder="상세주소 (동·층·호수 등)">
+            <!-- 카카오 우편번호 서비스가 그려지는 자리.
+                 닫기 버튼을 따로 두지 않는다 — 위젯 자체의 닫기(×)와 겹쳐 가려 버린다.
+                 닫기는 위젯의 onclose(FORCE_CLOSE) 와 "주소 검색" 버튼 토글로 처리한다. -->
+            <div class="postcode-layer" id="postcodeLayer" style="display:none">
+              <div class="postcode-layer-body" id="postcodeLayerBody"></div>
+            </div>
             <span class="field-error" id="err-address"></span>
           </div>
 
@@ -398,7 +413,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <script src="https://aqr.aplx.link/assets/js/jquery.min.js"></script>
-  <script src="script.js?v=20260617_01"></script>
+  <script src="https://t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script src="script.js?v=20261112_01"></script>
 
 </body>
 </html>

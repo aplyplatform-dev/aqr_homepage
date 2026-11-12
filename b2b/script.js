@@ -39,7 +39,8 @@ window.addEventListener('load', function() {
       return '';
     },
     address: function (v) {
-      if (!v) return '주소를 입력해주세요.';
+      /* 직접 입력할 수 없는 칸이다 — 검색으로만 채워진다 */
+      if (!v) return '주소 검색 버튼을 눌러 주소를 선택해주세요.';
       return '';
     }
   };
@@ -68,6 +69,10 @@ window.addEventListener('load', function() {
       var v = el.value.trim();
       dispEl.textContent = v || '—';
     });
+
+    /* 주소는 우편번호 · 상세주소까지 합쳐 한 줄로 — 계약서 PDF 에 이대로 들어간다 */
+    var addrDisp = document.getElementById('s-address');
+    if (addrDisp) addrDisp.textContent = fullAddress() || '—';
 
     /* 가격 계산 */
     var count     = parseInt(document.getElementById('page_count').value, 10) || 0;
@@ -228,6 +233,91 @@ window.addEventListener('load', function() {
       updateSubmitButton();
     });
   });
+
+  /* ============================================================
+     Address — 카카오 우편번호 서비스
+     https://postcode.map.kakao.com/guide
+     번들이 window.daum 과 window.kakao 두 이름으로 올라온다.
+  ============================================================ */
+  var postcodeInput     = document.getElementById('postcode');
+  var addressInput      = document.getElementById('address');
+  var addressDetail     = document.getElementById('address_detail');
+  var postcodeLayer     = document.getElementById('postcodeLayer');
+  var postcodeLayerBody = document.getElementById('postcodeLayerBody');
+
+  /** 제출 · 요약표에 쓰는 전체 주소. 주소가 비어 있으면 빈 문자열. */
+  function fullAddress() {
+    var zip    = postcodeInput.value.trim();
+    var addr   = addressInput.value.trim();
+    var detail = addressDetail.value.trim();
+    if (!addr) return '';
+    return (zip ? '(' + zip + ') ' : '') + addr + (detail ? ' ' + detail : '');
+  }
+
+  function closePostcodeLayer() {
+    postcodeLayer.style.display = 'none';
+    postcodeLayerBody.innerHTML = '';
+  }
+
+  /**
+   * 검색 결과를 칸에 넣는다.
+   * address 는 검색어에 따라 도로명/지번이 섞여 오므로 사용자가 고른 쪽(userSelectedType)을 쓴다.
+   * 1:N 매핑이면 roadAddress · jibunAddress 가 비어 있을 수 있어 address 로 되돌린다.
+   */
+  function applyPostcodeResult(data) {
+    var isJibun = data.userSelectedType === 'J';
+    var addr    = (isJibun ? data.jibunAddress : data.roadAddress) || data.address || '';
+
+    /* 참고 항목(법정동 · 공동주택명)은 도로명 주소에만 붙인다 — 지번 주소에는 이미 들어 있다 */
+    var extra = '';
+    if (!isJibun) {
+      if (data.bname && /[동로가]$/.test(data.bname)) extra = data.bname;
+      if (data.buildingName && data.apartment === 'Y') extra += (extra ? ', ' : '') + data.buildingName;
+      if (extra) extra = ' (' + extra + ')';
+    }
+
+    postcodeInput.value = data.zonecode || '';
+    addressInput.value  = addr + extra;
+
+    closePostcodeLayer();
+    validateField('address');
+    updateSummary();
+    updateSubmitButton();
+    addressDetail.focus();
+  }
+
+  function openPostcode() {
+    /* 이미 열려 있으면 닫는다 — 레이어에 따로 닫기 버튼을 두면 위젯 자체 닫기와 겹친다 */
+    if (postcodeLayer.style.display !== 'none') { closePostcodeLayer(); return; }
+
+    /* 팝업(window.open)을 막는 웹뷰가 있어 레이어(embed)로 띄운다 */
+    var Postcode = (window.daum && window.daum.Postcode) || (window.kakao && window.kakao.Postcode);
+    if (!Postcode) {
+      setError('address', '주소 검색을 불러오지 못했습니다. 새로고침 후 다시 시도해주세요.');
+      return;
+    }
+
+    postcodeLayerBody.innerHTML = '';
+    postcodeLayer.style.display = 'block';
+
+    new Postcode({
+      oncomplete: applyPostcodeResult,
+      onclose: function (state) { if (state === 'FORCE_CLOSE') closePostcodeLayer(); },
+      width: '100%',
+      height: '100%'
+    }).embed(postcodeLayerBody);
+
+    postcodeLayer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  document.getElementById('addressSearchBtn').addEventListener('click', openPostcode);
+
+  /* 읽기 전용 칸을 눌러도 열리게 — 직접 치려다 막히는 혼란을 줄인다 */
+  postcodeInput.addEventListener('click', openPostcode);
+  addressInput.addEventListener('click', openPostcode);
+
+  /* 상세주소만 직접 입력한다 */
+  addressDetail.addEventListener('input', updateSummary);
 
   /* 동의 항목 체크박스 5개 */
   function allTermsChecked() {
@@ -491,6 +581,10 @@ window.addEventListener('load', function() {
     var totalPrice = count * unitPrice;
     setHidden('unit_price',  unitPrice);
     setHidden('total_price', totalPrice);
+
+    /* 주소 칸에는 name 이 없다. 우편번호 · 상세주소까지 합친 값을 address 로 보낸다
+       (b2bformhandler.php 는 address 하나만 읽는다. postcode · address_detail 은 따로도 간다) */
+    setHidden('address', fullAddress());
 
     var formData = new FormData(form);
 
