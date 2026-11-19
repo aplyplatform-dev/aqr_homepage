@@ -146,3 +146,32 @@
 @media (prefers-reduced-motion: reduce) {
   .hero-title { will-change: auto; }
 }
+
+/* ── Pretendard ────────────────────────────────────────────────
+   https://github.com/orioncactus/pretendard (SIL Open Font License)
+   웹폰트 자체는 각 페이지 <head> 에서 jsDelivr 로 불러온다(variable dynamic subset).
+   이 파일은 theme.css 다음에 실리므로 아래 규칙이 theme.css 의 Rubik 을 덮는다. */
+:root {
+  --font-family-sans-serif: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR",
+    "Malgun Gothic", sans-serif;
+}
+
+body {
+  font-family: var(--font-family-sans-serif);
+}
+
+/* theme.css 가 Rubik 을 직접 박아 둔 곳들 — 상속으로는 바뀌지 않는다 */
+.tooltip,
+.popover {
+  font-family: var(--font-family-sans-serif);
+}
+
+/* Poppins 를 쓰던 제목·장식 문구도 같은 글꼴로 맞춘다 */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5,
+.lead, .title-decorative,
+.btn, .form-control, input, button, select, optgroup, textarea {
+  font-family: var(--font-family-sans-serif);
+}
