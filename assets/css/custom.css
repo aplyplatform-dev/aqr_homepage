@@ -203,6 +203,11 @@ h1, h2, h3, h4, h5, h6,
 .press-flow__row {
   display: flex;
   width: max-content;
+  /* theme.css 는 .list-unstyled 같은 특정 클래스에만 불릿을 지운다.
+     그냥 둔 <ul> 은 기본 불릿이 남아 카드 사이에 점으로 보인다. */
+  list-style: none;
+  margin: 0;
+  padding: 0;
   animation: press-flow-move 64s linear infinite;
 }
 .press-flow__row + .press-flow__row {
